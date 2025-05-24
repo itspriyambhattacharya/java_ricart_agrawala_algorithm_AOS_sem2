@@ -29,17 +29,21 @@ public class Node extends Thread {
         }
     }
 
-    public synchronized void receiveReply() throws Exception {
+    public synchronized void receiveReply() {
         this.reply++;
         if (this.reply == this.otherNodes.size()) {
             enterCriticalSection();
         }
     }
 
-    public void enterCriticalSection() throws Exception {
+    public void enterCriticalSection() {
         this.inCS = true;
         System.out.println("Node id: " + this.id + " is entering Critical Section.\n");
-        Thread.sleep(2000);
+        try {
+            Thread.sleep(2000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
     public void exitCriticalSection() {

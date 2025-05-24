@@ -1,5 +1,7 @@
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Queue;
 
 public class Node extends Thread {
     // Attributes
@@ -9,6 +11,7 @@ public class Node extends Thread {
     private List<Node> otherNodes;
     private int reply;
     private int clock;
+    private Queue<Message> queue;
 
     // Constructor
     public Node(int id) {
@@ -18,6 +21,7 @@ public class Node extends Thread {
         this.otherNodes = new ArrayList<>();
         this.reply = 0;
         this.clock = 0;
+        this.queue = new LinkedList<>();
     }
 
     // Methods
@@ -26,13 +30,6 @@ public class Node extends Thread {
             if (node.id != this.id) {
                 otherNodes.add(node);
             }
-        }
-    }
-
-    public synchronized void receiveReply() {
-        this.reply++;
-        if (this.reply == this.otherNodes.size()) {
-            enterCriticalSection();
         }
     }
 
@@ -51,6 +48,13 @@ public class Node extends Thread {
         this.reqCS = false;
         System.out.println("Node id: " + this.id + " is exiting Critical Section.\n");
         exitCriticalSection();
+    }
+
+    public synchronized void receiveReply() {
+        this.reply++;
+        if (this.reply == this.otherNodes.size()) {
+            enterCriticalSection();
+        }
     }
 
     public synchronized void receiveRequest(Message m) {

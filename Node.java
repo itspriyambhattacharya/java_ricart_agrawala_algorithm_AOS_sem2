@@ -8,6 +8,7 @@ public class Node extends Thread {
     private boolean reqCS;
     private List<Node> otherNodes;
     private int reply;
+    private int clock;
 
     // Constructor
     public Node(int id) {
@@ -16,6 +17,7 @@ public class Node extends Thread {
         this.reqCS = false;
         this.otherNodes = new ArrayList<>();
         this.reply = 0;
+        this.clock = 0;
     }
 
     // Methods
@@ -25,6 +27,14 @@ public class Node extends Thread {
                 otherNodes.add(node);
             }
         }
+    }
+
+    public synchronized void requestCriticalSection() {
+        this.reqCS = true;
+        this.clock++;
+        this.reply = 0;
+
+        Message m = new Message(this.id, this.clock);
     }
 
     public synchronized void receiveReply() throws Exception {
@@ -41,6 +51,8 @@ public class Node extends Thread {
     }
 
     public void exitCriticalSection() {
+        this.inCS = false;
+        this.reqCS = false;
         System.out.println("Node id: " + this.id + " is exiting Critical Section.\n");
 
     }

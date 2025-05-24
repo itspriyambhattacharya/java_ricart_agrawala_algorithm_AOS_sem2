@@ -17,7 +17,7 @@ public class Node {
     }
 
     // Methods
-    public void setOtherNodes(ArrayList<Node> arr) {
+    public void setOtherNodes(List<Node> arr) {
         for (Node node : arr) {
             if (node.id != this.id) {
                 otherNodes.add(node);

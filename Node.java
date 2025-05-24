@@ -29,14 +29,6 @@ public class Node extends Thread {
         }
     }
 
-    public synchronized void requestCriticalSection() {
-        this.reqCS = true;
-        this.clock++;
-        this.reply = 0;
-
-        Message m = new Message(this.id, this.clock);
-    }
-
     public synchronized void receiveReply() throws Exception {
         this.reply++;
         if (this.reply == this.otherNodes.size()) {
@@ -54,7 +46,22 @@ public class Node extends Thread {
         this.inCS = false;
         this.reqCS = false;
         System.out.println("Node id: " + this.id + " is exiting Critical Section.\n");
+        exitCriticalSection();
+    }
 
+    public void receiveRequest(Message m) {
+
+    }
+
+    public synchronized void requestCriticalSection() {
+        this.reqCS = true;
+        this.clock++;
+        this.reply = 0;
+
+        Message m = new Message(this.id, this.clock);
+        for (Node node : otherNodes) {
+            node.receiveRequest(m);
+        }
     }
 
     @Override

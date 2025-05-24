@@ -1,7 +1,7 @@
 import java.util.ArrayList;
 import java.util.List;
 
-public class Node {
+public class Node extends Thread {
     // Attributes
     private int id;
     private boolean inCS;
@@ -22,6 +22,16 @@ public class Node {
             if (node.id != this.id) {
                 otherNodes.add(node);
             }
+        }
+    }
+
+    @Override
+    public void run() {
+        try {
+            Thread.sleep(2000);
+        } catch (InterruptedException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
         }
     }
 }

@@ -49,7 +49,7 @@ public class Node extends Thread {
         exitCriticalSection();
     }
 
-    public void receiveRequest(Message m) {
+    public synchronized void receiveRequest(Message m) {
 
     }
 

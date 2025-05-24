@@ -33,6 +33,12 @@ public class Node extends Thread {
         }
     }
 
+    public void exitCriticalSection() {
+        this.inCS = false;
+        this.reqCS = false;
+        System.out.println("Node id: " + this.id + " is exiting Critical Section.\n");
+    }
+
     public void enterCriticalSection() {
         this.inCS = true;
         System.out.println("Node id: " + this.id + " is entering Critical Section.\n");
@@ -41,12 +47,6 @@ public class Node extends Thread {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-    }
-
-    public void exitCriticalSection() {
-        this.inCS = false;
-        this.reqCS = false;
-        System.out.println("Node id: " + this.id + " is exiting Critical Section.\n");
         exitCriticalSection();
     }
 

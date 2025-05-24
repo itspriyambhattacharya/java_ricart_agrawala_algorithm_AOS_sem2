@@ -13,5 +13,10 @@ public class Main {
         n2.setOtherNodes(arr);
         n3.setOtherNodes(arr);
         n4.setOtherNodes(arr);
+
+        n1.start();
+        n2.start();
+        n3.start();
+        n4.start();
     }
 }

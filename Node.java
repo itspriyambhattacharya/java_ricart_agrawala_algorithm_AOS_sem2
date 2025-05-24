@@ -58,6 +58,20 @@ public class Node extends Thread {
     }
 
     public synchronized void receiveRequest(Message m) {
+        clock = Math.max(clock, m.getTimestamp()) + 1;
+
+        boolean sendReply = !this.reqCS || m.getTimestamp() < clock
+                || (m.getTimestamp() == clock && m.getId() < this.id);
+
+        if (sendReply) {
+            for (Node node : otherNodes) {
+                if (node.id == m.getId()) {
+                    node.receiveReply();
+                }
+            }
+        } else {
+            this.queue.add(m);
+        }
 
     }
 

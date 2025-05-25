@@ -4,27 +4,26 @@ import java.util.List;
 import java.util.Queue;
 
 public class Node extends Thread {
-    // Attributes
-    private int id;
+    private final int id;
     private boolean inCS;
     private boolean reqCS;
     private List<Node> otherNodes;
     private int reply;
     private int clock;
-    private Queue<Message> queue;
+    private int requestTimestamp; // FIXED
+    private final Queue<Message> queue;
 
-    // Constructor
     public Node(int id) {
         this.id = id;
         this.inCS = false;
         this.reqCS = false;
-        this.otherNodes = new ArrayList<>();
         this.reply = 0;
         this.clock = 0;
+        this.requestTimestamp = -1;
+        this.otherNodes = new ArrayList<>();
         this.queue = new LinkedList<>();
     }
 
-    // Methods
     public void setOtherNodes(List<Node> arr) {
         for (Node node : arr) {
             if (node.id != this.id) {
@@ -33,29 +32,32 @@ public class Node extends Thread {
         }
     }
 
-    public void exitCriticalSection() {
+    public synchronized void exitCriticalSection() {
         this.inCS = false;
         this.reqCS = false;
-        System.out.println("Node id: " + this.id + " is exiting Critical Section.\n");
+        System.out.println("Node " + id + " is EXITING CS at clock = " + clock + "\n");
 
         while (!queue.isEmpty()) {
-            Message m = queue.poll(); // removes the head of the queue
+            Message m = queue.poll();
             for (Node node : otherNodes) {
                 if (node.id == m.getId()) {
-                    node.receiveReply();
+                    Node target = node;
+                    new Thread(() -> target.receiveReply()).start();
                 }
             }
         }
     }
 
-    public void enterCriticalSection() {
+    public synchronized void enterCriticalSection() {
         this.inCS = true;
-        System.out.println("Node id: " + this.id + " is entering Critical Section.\n");
+        System.out.println("Node " + id + " is ENTERING CS at clock = " + clock + "\n");
+
         try {
-            Thread.sleep(2000);
+            Thread.sleep(2000); // simulate critical section execution
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+
         exitCriticalSection();
     }
 
@@ -67,40 +69,43 @@ public class Node extends Thread {
     }
 
     public synchronized void receiveRequest(Message m) {
-        int localTime = this.clock;
         clock = Math.max(clock, m.getTimestamp()) + 1;
 
-        boolean sendReply = !this.reqCS || m.getTimestamp() < localTime
-                || (m.getTimestamp() == localTime && m.getId() < this.id);
+        boolean sendReply = !this.reqCS ||
+                (m.getTimestamp() < this.requestTimestamp) ||
+                (m.getTimestamp() == this.requestTimestamp && m.getId() < this.id);
 
         if (sendReply) {
             for (Node node : otherNodes) {
                 if (node.id == m.getId()) {
-                    node.receiveReply();
+                    Node target = node;
+                    new Thread(() -> target.receiveReply()).start();
                 }
             }
         } else {
             this.queue.add(m);
         }
-
     }
 
     public synchronized void requestCriticalSection() {
         this.reqCS = true;
-        int requestClock = ++this.clock; // increment before event
+        this.requestTimestamp = ++this.clock;
         this.reply = 0;
 
-        Message m = new Message(this.id, requestClock);
+        System.out.println("Node " + id + " is REQUESTING CS at clock = " + requestTimestamp);
+
+        Message m = new Message(this.id, requestTimestamp);
         for (Node node : otherNodes) {
-            node.receiveRequest(m);
+            Node target = node;
+            new Thread(() -> target.receiveRequest(m)).start();
         }
     }
 
     @Override
     public void run() {
         try {
-            int r = (int) Math.floor(Math.random() * (this.otherNodes.size()));
-            Thread.sleep(500 * r);
+            int delay = (int) (Math.random() * 3000);
+            Thread.sleep(delay);
             requestCriticalSection();
         } catch (InterruptedException e) {
             e.printStackTrace();

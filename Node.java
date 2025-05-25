@@ -10,7 +10,7 @@ public class Node extends Thread {
     private List<Node> otherNodes;
     private int reply;
     private int clock;
-    private int requestTimestamp; // FIXED
+    private int requestTimestamp;
     private final Queue<Message> queue;
 
     public Node(int id) {

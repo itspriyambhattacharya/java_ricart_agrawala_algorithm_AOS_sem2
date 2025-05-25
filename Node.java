@@ -67,10 +67,11 @@ public class Node extends Thread {
     }
 
     public synchronized void receiveRequest(Message m) {
+        int localTime = this.clock;
         clock = Math.max(clock, m.getTimestamp()) + 1;
 
-        boolean sendReply = !this.reqCS || m.getTimestamp() < clock
-                || (m.getTimestamp() == clock && m.getId() < this.id);
+        boolean sendReply = !this.reqCS || m.getTimestamp() < localTime
+                || (m.getTimestamp() == localTime && m.getId() < this.id);
 
         if (sendReply) {
             for (Node node : otherNodes) {
@@ -86,10 +87,10 @@ public class Node extends Thread {
 
     public synchronized void requestCriticalSection() {
         this.reqCS = true;
-        this.clock++; // increment before event
+        int requestClock = ++this.clock; // increment before event
         this.reply = 0;
 
-        Message m = new Message(this.id, this.clock);
+        Message m = new Message(this.id, requestClock);
         for (Node node : otherNodes) {
             node.receiveRequest(m);
         }
@@ -98,7 +99,8 @@ public class Node extends Thread {
     @Override
     public void run() {
         try {
-            Thread.sleep(500);
+            int r = (int) Math.floor(Math.random() * (this.otherNodes.size()));
+            Thread.sleep(500 * r);
             requestCriticalSection();
         } catch (InterruptedException e) {
             e.printStackTrace();

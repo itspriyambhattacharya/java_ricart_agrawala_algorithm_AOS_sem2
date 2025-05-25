@@ -37,6 +37,15 @@ public class Node extends Thread {
         this.inCS = false;
         this.reqCS = false;
         System.out.println("Node id: " + this.id + " is exiting Critical Section.\n");
+
+        while (!queue.isEmpty()) {
+            Message m = queue.poll(); // removes the head of the queue
+            for (Node node : otherNodes) {
+                if (node.id == m.getId()) {
+                    node.receiveReply();
+                }
+            }
+        }
     }
 
     public void enterCriticalSection() {
@@ -77,7 +86,7 @@ public class Node extends Thread {
 
     public synchronized void requestCriticalSection() {
         this.reqCS = true;
-        this.clock++;
+        this.clock++; // increment before event
         this.reply = 0;
 
         Message m = new Message(this.id, this.clock);
@@ -89,7 +98,7 @@ public class Node extends Thread {
     @Override
     public void run() {
         try {
-            Thread.sleep(2000);
+            Thread.sleep(500);
             requestCriticalSection();
         } catch (InterruptedException e) {
             e.printStackTrace();

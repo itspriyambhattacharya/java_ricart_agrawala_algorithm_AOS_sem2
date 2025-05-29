@@ -79,6 +79,7 @@ public class Node extends Thread {
             for (Node node : otherNodes) {
                 if (node.id == m.getId()) {
                     Node target = node;
+                    System.out.println("Node " + this.id + " is sending go ahead to Node " + m.getId());
                     new Thread(() -> target.receiveReply()).start();
                 }
             }
